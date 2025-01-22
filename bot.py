@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 import requests
 
 
-bot = Bot(token='7029238314:AAE8S_tXyflX-nAr4PAT7IpWOY3KR1dhvag')
+bot = Bot(token='BOTTOKEN')
 dp = Dispatcher()
 
 users = {}
@@ -144,7 +144,7 @@ def calculate_water_goal(weight, activity_minutes, city):
 
 
 def get_city_temperature(city): # Смотрим на темпу в городе, чтобы учесть в формуле
-    API_KEY = 'b44b3fe6057829d2c1422f0d7b3f547b'
+    API_KEY = 'APITOKEN'
     url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric&lang=ru'
     response = requests.get(url)
     if response.status_code == 200:
