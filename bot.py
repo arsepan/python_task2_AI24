@@ -22,6 +22,9 @@ class ProfileStates(StatesGroup):
 class FoodStates(StatesGroup):
     waiting_for_food_amount = State()
 
+class CalorieGoalState(StatesGroup):
+    input_value = State()
+
 
 @dp.message(Command('start'))
 async def cmd_start(message: Message):
@@ -98,6 +101,33 @@ async def process_city(message: Message, state: FSMContext):
     await state.clear()
 
 
+@dp.message(Command('set_calorie_goal'))
+async def set_calorie_goal_handler(message: Message, state: FSMContext):
+    await message.reply('Введите вашу дневную норму калорий (в ккал). Если хотите, чтобы я рассчитал норму для вас автоматически, введите 0')
+    await state.set_state(CalorieGoalState.input_value)
+
+@dp.message(CalorieGoalState.input_value)
+async def save_calorie_goal(message: Message, state: FSMContext):
+    try:
+        calorie_goal = int(message.text)
+        user_id = message.from_user.id
+
+        if user_id not in users:
+            await message.reply('Пожалуйста, настройте профиль с помощью команды /set_profile прежде, чем устанавливать цель калорий')
+            await state.clear()
+            return
+
+        if calorie_goal == 0:
+            data = users[user_id]
+            calorie_goal = calculate_calorie_goal(data['weight'], data['height'], data['age'])
+
+        users[user_id]['calorie_goal'] = calorie_goal
+        await message.reply(f'Ваша новая цель по калориям установлена: {calorie_goal} ккал')
+        await state.clear()
+    except ValueError:
+        await message.reply('Пожалуйста, введите корректное числовое значение для нормы калорий')
+
+
 def calculate_water_goal(weight, activity_minutes, city):
     base_water = weight * 30
     activity_water = (activity_minutes // 30) * 500  # +500 мл за 30 минут активности
@@ -159,7 +189,7 @@ async def cmd_log_food(message: Message, state: FSMContext):
         if food_info:
             await state.update_data(food_calories=food_info['calories'])
             await state.set_state(FoodStates.waiting_for_food_amount)
-            await message.reply(f'🍏 {food_info['name']} — {food_info['calories']} ккал на 100 г. Сколько грамм вы съели?')
+            await message.reply(f"🍏 {food_info['name']} — {food_info['calories']} ккал на 100 г. Сколько грамм вы съели?")
         else:
             await message.reply('Не удалось найти информацию о продукте')
     except IndexError:
