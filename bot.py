@@ -1,4 +1,5 @@
 import asyncio
+import os
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.filters import Command
@@ -7,7 +8,7 @@ from aiogram.fsm.state import State, StatesGroup
 import requests
 
 
-bot = Bot(token='BOTTOKEN')
+bot = Bot(token=os.environ['BOTTOKEN'])
 dp = Dispatcher()
 
 users = {}
@@ -144,7 +145,7 @@ def calculate_water_goal(weight, activity_minutes, city):
 
 
 def get_city_temperature(city): # Смотрим на темпу в городе, чтобы учесть в формуле
-    API_KEY = 'APITOKEN'
+    API_KEY = os.environ['API_KEY']
     url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric&lang=ru'
     response = requests.get(url)
     if response.status_code == 200:
